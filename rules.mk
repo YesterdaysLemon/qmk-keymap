@@ -12,23 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+EXTRAFLAGS += -flto
 COMBO_ENABLE = yes
 EXTRAKEY_ENABLE = yes
 LTO_ENABLE = yes
-MOUSEKEY_ENABLE = yes
+MOUSEKEY_ENABLE = no
 REPEAT_KEY_ENABLE = yes
 UNICODE_ENABLE = no
 UNICODEMAP_ENABLE = no
 UCIS_ENABLE = no
 UNICODE_COMMON = yes
+TAP_DANCE_ENABLE = yes
+MUSIC_ENABLE = no
 
-AUTOCORRECT_ENABLE ?= yes
+AUTOCORRECT_ENABLE ?= no
 CAPS_WORD_ENABLE ?= yes
 CONSOLE_ENABLE ?= no
 GRAVE_ESC_ENABLE ?= no
 NKRO_ENABLE ?= no
 SPACE_CADET_ENABLE ?= no
-TAP_DANCE_ENABLE ?= no
+
 
 ACHORDION_ENABLE ?= yes
 ifeq ($(strip $(ACHORDION_ENABLE)), yes)
@@ -55,7 +59,7 @@ ifeq ($(strip $(ORBITAL_MOUSE_ENABLE)), yes)
 	SRC += features/orbital_mouse.c
 endif
 
-SENTENCE_CASE_ENABLE ?= yes
+SENTENCE_CASE_ENABLE ?= no
 ifeq ($(strip $(SENTENCE_CASE_ENABLE)), yes)
 	OPT_DEFS += -DSENTENCE_CASE_ENABLE
 	SRC += features/sentence_case.c
