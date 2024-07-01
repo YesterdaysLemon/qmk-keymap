@@ -78,6 +78,11 @@ enum custom_keycodes {
   TMUXESC,
   UPDIR,
   USRNAME,
+
+  //more magic
+  MAG_2,
+  MAG_3,
+
   // Macros invoked through the Magic key.
   M_DOCSTR,
   M_EQEQ,
@@ -88,8 +93,10 @@ enum custom_keycodes {
   M_QUEN,
   M_THE,
   M_TMENT,
-  M_UPDIR,
+  M_UPDIR,  
   M_NOOP,
+
+
 };
 
 // This keymap uses Ikcelaks' Magic Sturdy layout for the base layer (see
@@ -135,6 +142,7 @@ enum custom_keycodes {
 //     . *   -> ../             (shell)
 //     . * @ -> ../../
 #define MAGIC QK_AREP
+
 
 // Short aliases for home row mods and other tap-hold keys.
 #define HOME_S LT(SYM, KC_S)
@@ -748,10 +756,53 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
         SEND_STRING(/*`*/"``\n\n```" SS_TAP(X_UP));
         break;
     }
-  }
 
+  if (get_repeat_key_count() > 0) {
+              switch (keycode) {
+                  case KC_BSPC:
+                  case KC_DQUO:
+                  case KC_LPRN:
+                  case KC_SPC:
+                  case KC_ENT:
+                      MAGIC_STRING("for", KC_COMM);
+                      break;
+                  case KC_I:
+                      MAGIC_STRING("ng", KC_S);
+                      break;
+                  case KC_COMM:
+                      MAGIC_STRING(" and", KC_D);
+                      return false;
+                  case KC_A:
+                      MAGIC_STRING("nd", KC_D);
+                      return false;
+                  case KC_N:
+                      MAGIC_STRING("f", KC_F);
+                      return false;
+                  case KC_B:
+                      MAGIC_STRING("ecause", KC_E);
+                      return false;
+                  case KC_W:
+                      MAGIC_STRING("ould", KC_D);
+                      return false;
+                  case KC_Y:
+                      if (get_repeat_key_count() > 2) {
+                          MAGIC_STRING("ll", KC_L);
+                          return false;
+                      }
+                      if (get_repeat_key_count() > 1) {
+                          send_char('\'');
+                          return false;
+                      }
+                      MAGIC_STRING("ou", KC_U);
+                      return false;
+              }
+          }
+  }
+          
   return true;
 }
+
+
 
 void matrix_scan_user(void) {
 #ifdef ACHORDION_ENABLE

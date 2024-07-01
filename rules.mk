@@ -19,7 +19,7 @@ EXTRAKEY_ENABLE = yes
 LTO_ENABLE = yes
 MOUSEKEY_ENABLE = no
 REPEAT_KEY_ENABLE = yes
-UNICODE_ENABLE = no
+UNICODE_ENABLE = yes
 UNICODEMAP_ENABLE = no
 UCIS_ENABLE = no
 UNICODE_COMMON = yes
@@ -59,7 +59,7 @@ ifeq ($(strip $(ORBITAL_MOUSE_ENABLE)), yes)
 	SRC += features/orbital_mouse.c
 endif
 
-SENTENCE_CASE_ENABLE ?= no
+SENTENCE_CASE_ENABLE ?= yes
 ifeq ($(strip $(SENTENCE_CASE_ENABLE)), yes)
 	OPT_DEFS += -DSENTENCE_CASE_ENABLE
 	SRC += features/sentence_case.c
