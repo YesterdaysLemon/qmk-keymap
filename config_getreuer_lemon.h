@@ -45,13 +45,6 @@
 // When idle, turn off Layer Lock after 60 seconds.
 #define LAYER_LOCK_IDLE_TIMEOUT 60000
 
-// When idle, turn off Sentence Case after 2 seconds.
-#define SENTENCE_CASE_TIMEOUT 2000
-
-#ifdef AUDIO_ENABLE
-#define STARTUP_SONG SONG(NO_SOUND)
-#endif  // AUDIO_ENABLE
-
 // Firmware size reducing stuff
 #undef LOCKING_SUPPORT_ENABLE
 #undef LOCKING_RESYNC_ENABLE

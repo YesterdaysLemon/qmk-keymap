@@ -52,16 +52,3 @@ ifeq ($(strip $(LAYER_LOCK_ENABLE)), yes)
 	SRC += features/layer_lock.c
 endif
 
-ORBITAL_MOUSE_ENABLE ?= no
-ifeq ($(strip $(ORBITAL_MOUSE_ENABLE)), yes)
-	MOUSE_ENABLE = yes
-	OPT_DEFS += -DORBITAL_MOUSE_ENABLE
-	SRC += features/orbital_mouse.c
-endif
-
-SENTENCE_CASE_ENABLE ?= yes
-ifeq ($(strip $(SENTENCE_CASE_ENABLE)), yes)
-	OPT_DEFS += -DSENTENCE_CASE_ENABLE
-	SRC += features/sentence_case.c
-endif
-

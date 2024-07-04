@@ -50,15 +50,7 @@
 #ifdef LAYER_LOCK_ENABLE
 #include "features/layer_lock.h"
 #endif  // LAYER_LOCK_ENABLE
-#ifdef ORBITAL_MOUSE_ENABLE
-#include "features/orbital_mouse.h"
-#endif  // ORBITAL_MOUSE_ENABLE
-#ifdef SENTENCE_CASE_ENABLE
-#include "features/sentence_case.h"
-#endif  // SENTENCE_CASE_ENABLE
-#if __has_include("user_song_list.h")
-#include "user_song_list.h"
-#endif
+
 
 enum layers {
   BASE,
@@ -285,20 +277,6 @@ uint16_t achordion_streak_chord_timeout(
 #endif  // ACHORDION_ENABLE
 
 ///////////////////////////////////////////////////////////////////////////////
-// Autocorrect (https://docs.qmk.fm/features/autocorrect)
-///////////////////////////////////////////////////////////////////////////////
-#ifdef AUTOCORRECT_ENABLE
-bool apply_autocorrect(uint8_t backspaces, const char* str,
-                       char* typo, char* correct) {
-  for (uint8_t i = 0; i < backspaces; ++i) {
-    tap_code(KC_BSPC);
-  }
-  send_string_with_delay_P(str, TAP_CODE_DELAY);
-  return false;
-}
-#endif  // AUTOCORRECT_ENABLE
-
-///////////////////////////////////////////////////////////////////////////////
 // Caps word (https://docs.qmk.fm/features/caps_word)
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef CAPS_WORD_ENABLE
@@ -326,49 +304,6 @@ bool caps_word_press_user(uint16_t keycode) {
   }
 }
 #endif  // CAPS_WORD_ENABLE
-
-///////////////////////////////////////////////////////////////////////////////
-// Sentence case (https://getreuer.info/posts/keyboards/sentence-case)
-///////////////////////////////////////////////////////////////////////////////
-#ifdef SENTENCE_CASE_ENABLE
-char sentence_case_press_user(uint16_t keycode, keyrecord_t* record,
-                              uint8_t mods) {
-  if ((mods & ~(MOD_MASK_SHIFT | MOD_BIT(KC_RALT))) == 0) {
-    const bool shifted = mods & MOD_MASK_SHIFT;
-    switch (keycode) {
-      case KC_A ... KC_Z:
-      case M_THE:
-        return 'a';  // Letter key.
-
-      case KC_DOT:  // Both . and Shift . (?) punctuate sentence endings.
-      case KC_EXLM:
-      case KC_QUES:
-        return '.';
-
-      case KC_COMM:
-        return shifted ? '.' : '#';
-
-      case KC_2 ... KC_0:  // 2 3 4 5 6 7 8 9 0
-      case KC_AT ... KC_RPRN:  // @ # $ % ^ & * ( )
-      case KC_MINS ... KC_SCLN:  // - = [ ] backslash ;
-      case KC_UNDS ... KC_COLN:  // _ + { } | :
-      case KC_GRV:
-        return '#';  // Symbol key.
-
-      case KC_SPC:
-        return ' ';  // Space key.
-
-      case KC_QUOT:
-      case KC_DQUO:
-        return '\'';  // Quote key.
-    }
-  }
-
-  // Otherwise clear Sentence Case to initial state.
-  sentence_case_clear();
-  return '\0';
-}
-#endif  // SENTENCE_CASE_ENABLE
 
 ///////////////////////////////////////////////////////////////////////////////
 // Repeat key (https://docs.qmk.fm/features/repeat_key)
@@ -554,31 +489,13 @@ void caps_word_set_user(bool active) {
 // User macro callbacks (https://docs.qmk.fm/feature_macros)
 ///////////////////////////////////////////////////////////////////////////////
 
-void keyboard_post_init_user(void) {
-  // Play MUSHROOM_SOUND two seconds after init, if defined and audio enabled.
-#if defined(AUDIO_ENABLE) && defined(MUSHROOM_SOUND)
-  uint32_t play_init_song_callback(uint32_t trigger_time, void* cb_arg) {
-    static float init_song[][2] = SONG(MUSHROOM_SOUND);
-    PLAY_SONG(init_song);
-    return 0;
-  }
-  defer_exec(2000, play_init_song_callback, NULL);
-#endif // defined(AUDIO_ENABLE) && defined(MUSHROOM_SOUND)
-}
-
 bool process_record_user(uint16_t keycode, keyrecord_t* record) {
 #ifdef ACHORDION_ENABLE
   if (!process_achordion(keycode, record)) { return false; }
 #endif  // ACHORDION_ENABLE
-#ifdef ORBITAL_MOUSE_ENABLE
-  if (!process_orbital_mouse(keycode, record)) { return false; }
-#endif  // ORBITAL_MOUSE_ENABLE
 #ifdef LAYER_LOCK_ENABLE
   if (!process_layer_lock(keycode, record, LLOCK)) { return false; }
 #endif  // LAYER_LOCK_ENABLE
-#ifdef SENTENCE_CASE_ENABLE
-  if (!process_sentence_case(keycode, record)) { return false; }
-#endif  // SENTENCE_CASE_ENABLE
 #ifdef CUSTOM_SHIFT_KEYS_ENABLE
   if (!process_custom_shift_keys(keycode, record)) { return false; }
 #endif  // CUSTOM_SHIFT_KEYS_ENABLE
@@ -693,43 +610,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
         SEND_STRING_DELAY("YesterdaysLemon", TAP_CODE_DELAY);
         return false;
 
-      case ARROW:  // Unicode arrows -> => <-> <=> through Shift and Alt.
-        send_unicode_string(alt ? (shift_mods
-                                    ? "\xe2\x87\x94"     // <=>
-                                    : "\xe2\x86\x94")    // <->
-                                 : (shift_mods
-                                    ? "\xe2\x87\x92"     // =>
-                                    : "\xe2\x86\x92"));  // ->
-        return false;
-
-      case KC_COLN:
-        if (shift_mods) {  // Shift + : types a happy emoji.
-          static const char* emojis[] = {
-              "\xf0\x9f\xa5\xb3",  // Party hat.
-              "\xf0\x9f\x91\x8d",  // Thumbs up.
-              "\xe2\x9c\x8c",      // Victory hand.
-              "\xf0\x9f\xa4\xa9",  // Star eyes.
-              "\xf0\x9f\x94\xa5",  // Fire.
-              "\xf0\x9f\x8e\x89",  // Party popper.
-              "\xf0\x9f\x91\xbe",  // Purple alien.
-              "\xf0\x9f\x98\x81",  // Grin.
-          };
-          const int NUM_EMOJIS = sizeof(emojis) / sizeof(*emojis);
-
-          // Pick an index between 0 and NUM_EMOJIS - 2.
-          uint8_t index = (UINT16_C(36563) * record->event.time) >> 8;
-          index = ((NUM_EMOJIS - 1) * index) >> 8;
-          // Don't pick the same emoji twice in a row.
-          static uint8_t last_index = 0;
-          if (index >= last_index) { ++index; }
-          last_index = index;
-
-          // Produce the emoji.
-          send_unicode_string(emojis[index]);
-          return false;
-        }
-        return true;
-
 // turned this off for space
 // #ifdef RGB_MATRIX_ENABLE
 //      case RGB_DEF:  // Set RGB matrix to some nice defaults.
@@ -757,46 +637,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
         break;
     }
 
-  if (get_repeat_key_count() > 0) {
-              switch (keycode) {
-                  case KC_BSPC:
-                  case KC_DQUO:
-                  case KC_LPRN:
-                  case KC_SPC:
-                  case KC_ENT:
-                      MAGIC_STRING("for", KC_COMM);
-                      break;
-                  case KC_I:
-                      MAGIC_STRING("ng", KC_S);
-                      break;
-                  case KC_COMM:
-                      MAGIC_STRING(" and", KC_D);
-                      return false;
-                  case KC_A:
-                      MAGIC_STRING("nd", KC_D);
-                      return false;
-                  case KC_N:
-                      MAGIC_STRING("f", KC_F);
-                      return false;
-                  case KC_B:
-                      MAGIC_STRING("ecause", KC_E);
-                      return false;
-                  case KC_W:
-                      MAGIC_STRING("ould", KC_D);
-                      return false;
-                  case KC_Y:
-                      if (get_repeat_key_count() > 2) {
-                          MAGIC_STRING("ll", KC_L);
-                          return false;
-                      }
-                      if (get_repeat_key_count() > 1) {
-                          send_char('\'');
-                          return false;
-                      }
-                      MAGIC_STRING("ou", KC_U);
-                      return false;
-              }
-          }
   }
           
   return true;
@@ -811,11 +651,5 @@ void matrix_scan_user(void) {
 #ifdef LAYER_LOCK_ENABLE
   layer_lock_task();
 #endif  // LAYER_LOCK_ENABLE
-#ifdef ORBITAL_MOUSE_ENABLE
-  orbital_mouse_task();
-#endif  // ORBITAL_MOUSE_ENABLE
-#ifdef SENTENCE_CASE_ENABLE
-  sentence_case_task();
-#endif  // SENTENCE_CASE_ENABLE
 }
 
